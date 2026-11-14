@@ -1,0 +1,257 @@
+[gd_scene load_steps=24 format=3]
+
+[ext_resource type="Texture2D" path="res://concrete.png" id="1_concrete"]
+[ext_resource type="Script" path="res://player.gd" id="2_player"]
+[ext_resource type="Script" path="res://weapon.gd" id="3_weapon"]
+[ext_resource type="Script" path="res://hud.gd" id="4_hud"]
+[ext_resource type="PackedScene" path="res://target.tscn" id="5_target"]
+[ext_resource type="AudioStream" path="res://gunshot.wav" id="6_gunshot"]
+[ext_resource type="AudioStream" path="res://step.wav" id="7_step"]
+
+[sub_resource type="ProceduralSkyMaterial" id="SkyMat"]
+sky_top_color = Color(0.35, 0.55, 0.85, 1)
+sky_horizon_color = Color(0.75, 0.82, 0.9, 1)
+ground_bottom_color = Color(0.3, 0.3, 0.32, 1)
+ground_horizon_color = Color(0.75, 0.82, 0.9, 1)
+
+[sub_resource type="Sky" id="SkyRes"]
+sky_material = SubResource("SkyMat")
+
+[sub_resource type="Environment" id="Env"]
+background_mode = 2
+sky = SubResource("SkyRes")
+ambient_light_source = 3
+ambient_light_color = Color(0.7, 0.75, 0.8, 1)
+ambient_light_energy = 1.2
+
+[sub_resource type="StandardMaterial3D" id="FloorMat"]
+albedo_texture = ExtResource("1_concrete")
+uv1_scale = Vector3(10, 10, 1)
+roughness = 0.95
+
+[sub_resource type="PlaneMesh" id="FloorMeshRes"]
+size = Vector2(40, 40)
+
+[sub_resource type="BoxShape3D" id="FloorShape"]
+size = Vector3(40, 0.2, 40)
+
+[sub_resource type="StandardMaterial3D" id="WallMat"]
+albedo_color = Color(0.45, 0.45, 0.47, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="WallMesh"]
+size = Vector3(40, 4, 0.5)
+
+[sub_resource type="BoxShape3D" id="WallShape"]
+size = Vector3(40, 4, 0.5)
+
+[sub_resource type="CapsuleShape3D" id="PlayerShape"]
+radius = 0.4
+height = 1.7
+
+[sub_resource type="StandardMaterial3D" id="GunMat"]
+albedo_color = Color(0.15, 0.15, 0.17, 1)
+roughness = 0.55
+metallic = 0.4
+
+[sub_resource type="BoxMesh" id="GunBodyMesh"]
+size = Vector3(0.07, 0.13, 0.5)
+
+[sub_resource type="CylinderMesh" id="BarrelMesh"]
+top_radius = 0.018
+bottom_radius = 0.018
+height = 0.3
+
+[sub_resource type="BoxMesh" id="MagMesh"]
+size = Vector3(0.05, 0.15, 0.09)
+
+[sub_resource type="StandardMaterial3D" id="FlashMat"]
+albedo_color = Color(1, 0.85, 0.4, 1)
+emission_enabled = true
+emission = Color(1, 0.8, 0.35, 1)
+emission_energy_multiplier = 3.0
+
+[sub_resource type="SphereMesh" id="FlashMesh"]
+radius = 0.035
+height = 0.07
+
+[node name="Main" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Env")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.906308, 0, 0.422618, 0.323744, 0.642788, -0.694272, -0.271654, 0.766044, 0.582563, 0, 12, 0)
+light_energy = 1.3
+shadow_enabled = true
+
+[node name="Floor" type="StaticBody3D" parent="."]
+
+[node name="FloorMesh" type="MeshInstance3D" parent="Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+mesh = SubResource("FloorMeshRes")
+surface_material_override/0 = SubResource("FloorMat")
+
+[node name="FloorCollision" type="CollisionShape3D" parent="Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.1, 0)
+shape = SubResource("FloorShape")
+
+[node name="WallN" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -20)
+
+[node name="Mesh" type="MeshInstance3D" parent="WallN"]
+mesh = SubResource("WallMesh")
+surface_material_override/0 = SubResource("WallMat")
+
+[node name="Shape" type="CollisionShape3D" parent="WallN"]
+shape = SubResource("WallShape")
+
+[node name="WallS" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 20)
+
+[node name="Mesh" type="MeshInstance3D" parent="WallS"]
+mesh = SubResource("WallMesh")
+surface_material_override/0 = SubResource("WallMat")
+
+[node name="Shape" type="CollisionShape3D" parent="WallS"]
+shape = SubResource("WallShape")
+
+[node name="WallE" type="StaticBody3D" parent="."]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 20, 2, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="WallE"]
+mesh = SubResource("WallMesh")
+surface_material_override/0 = SubResource("WallMat")
+
+[node name="Shape" type="CollisionShape3D" parent="WallE"]
+shape = SubResource("WallShape")
+
+[node name="WallW" type="StaticBody3D" parent="."]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, -20, 2, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="WallW"]
+mesh = SubResource("WallMesh")
+surface_material_override/0 = SubResource("WallMat")
+
+[node name="Shape" type="CollisionShape3D" parent="WallW"]
+shape = SubResource("WallShape")
+
+[node name="Player" type="CharacterBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 7)
+script = ExtResource("2_player")
+
+[node name="Collision" type="CollisionShape3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+shape = SubResource("PlayerShape")
+
+[node name="StepSound" type="AudioStreamPlayer3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.2, 0)
+stream = ExtResource("7_step")
+volume_db = -8.0
+
+[node name="Head" type="Node3D" parent="Player"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.45, 0)
+
+[node name="Camera" type="Camera3D" parent="Player/Head"]
+current = true
+fov = 75.0
+
+[node name="Weapon" type="Node3D" parent="Player/Head/Camera"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.26, -0.24, -0.5)
+groups=["weapon"]
+script = ExtResource("3_weapon")
+
+[node name="Body" type="MeshInstance3D" parent="Player/Head/Camera/Weapon"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.15)
+mesh = SubResource("GunBodyMesh")
+surface_material_override/0 = SubResource("GunMat")
+
+[node name="Barrel" type="MeshInstance3D" parent="Player/Head/Camera/Weapon"]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0.02, -0.55)
+mesh = SubResource("BarrelMesh")
+surface_material_override/0 = SubResource("GunMat")
+
+[node name="Mag" type="MeshInstance3D" parent="Player/Head/Camera/Weapon"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.13, -0.05)
+mesh = SubResource("MagMesh")
+surface_material_override/0 = SubResource("GunMat")
+
+[node name="Flash" type="Node3D" parent="Player/Head/Camera/Weapon"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -0.75)
+
+[node name="Mesh" type="MeshInstance3D" parent="Player/Head/Camera/Weapon/Flash"]
+mesh = SubResource("FlashMesh")
+surface_material_override/0 = SubResource("FlashMat")
+
+[node name="Light" type="OmniLight3D" parent="Player/Head/Camera/Weapon/Flash"]
+light_color = Color(1, 0.8, 0.4, 1)
+light_energy = 6.0
+omni_range = 5.0
+
+[node name="ShotSound" type="AudioStreamPlayer3D" parent="Player/Head/Camera/Weapon"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -0.7)
+stream = ExtResource("6_gunshot")
+volume_db = -2.0
+max_distance = 80.0
+
+[node name="ReloadSound" type="AudioStreamPlayer3D" parent="Player/Head/Camera/Weapon"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.1)
+volume_db = -2.0
+
+[node name="Target1" parent="." instance=ExtResource("5_target")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, -16)
+
+[node name="Target2" parent="." instance=ExtResource("5_target")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, -16)
+
+[node name="Target3" parent="." instance=ExtResource("5_target")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -16)
+
+[node name="Target4" parent="." instance=ExtResource("5_target")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 0, -16)
+
+[node name="Target5" parent="." instance=ExtResource("5_target")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -16)
+
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("4_hud")
+
+[node name="Hits" type="Label" parent="HUD"]
+offset_left = 20.0
+offset_top = 15.0
+offset_right = 320.0
+offset_bottom = 45.0
+theme_override_font_sizes/font_size = 26
+text = "Попаданий: 0"
+
+[node name="Accuracy" type="Label" parent="HUD"]
+offset_left = 20.0
+offset_top = 55.0
+offset_right = 340.0
+offset_bottom = 85.0
+theme_override_font_sizes/font_size = 20
+text = "Точность: —"
+
+[node name="Ammo" type="Label" parent="HUD"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -200.0
+offset_top = 15.0
+offset_right = -20.0
+offset_bottom = 45.0
+theme_override_font_sizes/font_size = 26
+text = "30 / 30"
+horizontal_alignment = 2
+
+[node name="Hint" type="Label" parent="HUD"]
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 0.0
+offset_top = -44.0
+offset_right = 0.0
+offset_bottom = -12.0
+theme_override_font_sizes/font_size = 18
+text = "ЛКМ — огонь   ПКМ — прицел   R — перезарядка   Esc — курсор"
+horizontal_alignment = 1
